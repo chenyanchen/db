@@ -1,6 +1,9 @@
 package db
 
-import "context"
+import (
+	"context"
+	"errors"
+)
 
 // KV represent a key-val storage to store values.
 type KV[K comparable, V any] interface {
@@ -8,3 +11,5 @@ type KV[K comparable, V any] interface {
 	Set(context.Context, K, V) error
 	Del(context.Context, K) error
 }
+
+var NotFound = errors.New("not found")
