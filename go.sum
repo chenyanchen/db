@@ -1,5 +1,7 @@
-github.com/Code-Hex/go-generics-cache v1.3.0 h1:f/NxsVXoP36ZtE8W8CM8Pb4BQpJI26bYYcuhHhDcazc=
-github.com/Code-Hex/go-generics-cache v1.3.0/go.mod h1:qxcC9kRVrct9rHeiYpFWSoW1vxyillCVzX13KZG8dl4=
+github.com/chenyanchen/db v0.1.5 h1:ko8gPnzscRiNjmoF4AypEnrR6MV2PjqTb/1LklFA34k=
+github.com/chenyanchen/db v0.1.5/go.mod h1:GlYW1OygQk4R9ijISgIuZuTYMfXXyPomYZbI8Dw17Lk=
+github.com/Code-Hex/go-generics-cache v1.3.1 h1:i8rLwyhoyhaerr7JpjtYjJZUcCbWOdiYO3fZXLiEC4g=
+github.com/Code-Hex/go-generics-cache v1.3.1/go.mod h1:qxcC9kRVrct9rHeiYpFWSoW1vxyillCVzX13KZG8dl4=
 github.com/chenyanchen/sync v0.1.0 h1:kaLp5i97GAxTB7wGPKbrvza1KjC6c1FGAbW79IclmX0=
 github.com/chenyanchen/sync v0.1.0/go.mod h1:LngGzPk3PSKRbQ9I/yDuz5DZvjC9SyK433S6UCFs4so=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=

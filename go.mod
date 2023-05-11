@@ -1,9 +1,9 @@
-module git.in.zhihu.com/chenyanchen/db
+module github.com/chenyanchen/db
 
 go 1.20
 
 require (
-	github.com/Code-Hex/go-generics-cache v1.3.0
+	github.com/Code-Hex/go-generics-cache v1.3.1
 	github.com/chenyanchen/sync v0.1.0
 	github.com/stretchr/testify v1.8.2
 )

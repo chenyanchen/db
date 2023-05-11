@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"git.in.zhihu.com/chenyanchen/db"
+	"github.com/chenyanchen/db"
 )
 
 func main() {

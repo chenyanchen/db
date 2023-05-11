@@ -9,7 +9,7 @@ import (
 	cache "github.com/Code-Hex/go-generics-cache"
 	"github.com/stretchr/testify/assert"
 
-	"git.in.zhihu.com/chenyanchen/db/mocks"
+	"github.com/chenyanchen/db/mocks"
 )
 
 func Test_cacheKV_Get(t *testing.T) {
