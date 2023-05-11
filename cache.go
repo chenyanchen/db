@@ -109,13 +109,16 @@ func (c *cacheKV[K, V]) Get(ctx context.Context, k K) (V, error) {
 		c.telemetry(k, "miss_src")
 		return got, fmt.Errorf("get from source: %w", err)
 	}
-	_ = c.Set(ctx, k, got)
+	c.cache.Set(k, got, c.cacheOptions(k)...)
 	c.telemetry(k, "hit_src")
 	return got, nil
 }
 
-func (c *cacheKV[K, V]) Set(_ context.Context, k K, v V) error {
+func (c *cacheKV[K, V]) Set(ctx context.Context, k K, v V) error {
 	c.cache.Set(k, v, c.cacheOptions(k)...)
+	if c.src != nil {
+		return c.src.Set(ctx, k, v)
+	}
 	return nil
 }
 
@@ -127,8 +130,11 @@ func (c *cacheKV[K, V]) cacheOptions(k K) []cache.ItemOption {
 	return opts
 }
 
-func (c *cacheKV[K, V]) Del(_ context.Context, k K) error {
+func (c *cacheKV[K, V]) Del(ctx context.Context, k K) error {
 	c.cache.Delete(k)
+	if c.src != nil {
+		return c.src.Del(ctx, k)
+	}
 	return nil
 }
 
