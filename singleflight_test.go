@@ -8,7 +8,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"git.in.zhihu.com/chenyanchen/db/mocks"
+	"github.com/chenyanchen/db/mocks"
 )
 
 func Test_sfKV_Get(t *testing.T) {
