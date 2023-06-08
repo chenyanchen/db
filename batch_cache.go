@@ -15,56 +15,49 @@ func NewBatchCacheKV[K comparable, V any](source BatchKV[K, V], options ...Cache
 	}
 }
 
-func (c *batchCacheKV[K, V]) Get(ctx context.Context, keys []K) (result map[K]V, err error) {
-	result = make(map[K]V, len(keys))
+func (c *batchCacheKV[K, V]) Get(ctx context.Context, keys []K) (map[K]V, error) {
+	result := make(map[K]V, len(keys))
 	var misses []K
-	// todo: optimize cache.Get to lock/unlock once
 	for _, key := range keys {
 		v, e := c.cache.Get(ctx, key)
 		if e != nil {
 			misses = append(misses, key)
-			err = e
 			continue
 		}
 		result[key] = v
 	}
+
 	if c.source == nil {
-		if len(misses) == 0 {
-			return result, NotFound
-		}
 		return result, nil
 	}
-	get, e := c.source.Get(ctx, misses)
-	if e != nil {
-		err = e
+
+	get, err := c.source.Get(ctx, misses)
+	if err != nil {
+		return result, err
 	}
 	for k, v := range get {
 		_ = c.cache.Set(ctx, k, v)
 		result[k] = v
 	}
-	return result, err
+	return result, nil
 }
 
-func (c *batchCacheKV[K, V]) Set(ctx context.Context, m map[K]V) (err error) {
+func (c *batchCacheKV[K, V]) Set(ctx context.Context, m map[K]V) error {
 	for k, v := range m {
-		if e := c.cache.Set(ctx, k, v); e != nil {
-			err = e
-		}
+		_ = c.cache.Set(ctx, k, v)
 	}
-	if e := c.source.Set(ctx, m); e != nil {
-		err = e
+	if c.source == nil {
+		return nil
 	}
-	return err
+	return c.source.Set(ctx, m)
 }
 
-func (c *batchCacheKV[K, V]) Del(ctx context.Context, keys []K) (err error) {
+func (c *batchCacheKV[K, V]) Del(ctx context.Context, keys []K) error {
 	for _, key := range keys {
-		if e := c.cache.Del(ctx, key); e != nil {
-			err = e
-		}
+		_ = c.cache.Del(ctx, key)
 	}
-	if e := c.source.Del(ctx, keys); e != nil {
-		err = e
+	if c.source == nil {
+		return nil
 	}
-	return err
+	return c.source.Del(ctx, keys)
 }
