@@ -38,8 +38,8 @@ func WithSource[K comparable, V any](src KV[K, V]) CacheOption[K, V] {
 	return func(kv *cacheKV[K, V]) { kv.src = src }
 }
 
-// WithTelemetryPrefix returns a CacheOption to set telemetry prefix.
-func WithTelemetryPrefix[K comparable, V any](keyFn func(K, string)) CacheOption[K, V] {
+// WithTelemetryFunc returns a CacheOption to set telemetry prefix.
+func WithTelemetryFunc[K comparable, V any](keyFn func(K, string)) CacheOption[K, V] {
 	return func(kv *cacheKV[K, V]) { kv.telFn = keyFn }
 }
 
