@@ -12,4 +12,4 @@ type KV[K comparable, V any] interface {
 	Del(context.Context, K) error
 }
 
-var NotFound = errors.New("not found")
+var ErrNotFound = errors.New("not found")
