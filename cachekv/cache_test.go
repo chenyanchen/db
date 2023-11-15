@@ -1,4 +1,4 @@
-package db
+package cachekv
 
 import (
 	"context"
@@ -9,6 +9,7 @@ import (
 	cache "github.com/Code-Hex/go-generics-cache"
 	"github.com/stretchr/testify/assert"
 
+	"github.com/chenyanchen/db"
 	"github.com/chenyanchen/db/mocks"
 )
 
@@ -28,7 +29,7 @@ func Test_cacheKV_Get(t *testing.T) {
 		{
 			name: "cache exist case",
 			c: func() *cacheKV[string, string] {
-				kv := NewCacheKV[string, string]()
+				kv := New[string, string]()
 				kv.cache.Set("key1", "val1")
 				return kv
 			}(),
@@ -37,12 +38,12 @@ func Test_cacheKV_Get(t *testing.T) {
 			wantErr: assert.NoError,
 		}, {
 			name:    "none source case",
-			c:       NewCacheKV[string, string](),
+			c:       New[string, string](),
 			args:    args[string]{nil, "key1"},
 			wantErr: assert.Error,
 		}, {
 			name: "source error case",
-			c: NewCacheKV[string, string](WithSource(func() KV[string, string] {
+			c: New[string, string](WithSource(func() db.KV[string, string] {
 				kv := mocks.MockKVStore[string, string]{
 					GetFunc: func(ctx context.Context, k string) (string, error) { return "", errors.New("inner error") },
 				}
@@ -52,7 +53,7 @@ func Test_cacheKV_Get(t *testing.T) {
 			wantErr: assert.Error,
 		}, {
 			name: "source got case",
-			c: NewCacheKV[string, string](WithSource(func() KV[string, string] {
+			c: New[string, string](WithSource(func() db.KV[string, string] {
 				kv := mocks.MockKVStore[string, string]{
 					GetFunc: func(ctx context.Context, k string) (string, error) { return "val1", nil },
 				}
@@ -64,7 +65,7 @@ func Test_cacheKV_Get(t *testing.T) {
 		}, {
 			name: "query from not found cache",
 			c: func() *cacheKV[string, string] {
-				kv := NewCacheKV(WithSource[string, string](mocks.MockKVStore[string, string]{
+				kv := New(WithSource[string, string](mocks.MockKVStore[string, string]{
 					GetFunc: func(ctx context.Context, k string) (string, error) { return "", fmt.Errorf("not found: %+v", k) },
 				}))
 				_, _ = kv.Get(context.Background(), "key1")
@@ -123,7 +124,7 @@ func Test_cacheKV_Set(t *testing.T) {
 	tests := []testCase[string, string]{
 		{
 			name:    "all right case",
-			c:       NewCacheKV[string, string](),
+			c:       New[string, string](),
 			args:    args[string, string]{nil, "key1", "val1"},
 			wantErr: assert.NoError,
 		},
@@ -149,7 +150,7 @@ func Test_cacheKV_Del(t *testing.T) {
 	tests := []testCase[string, string]{
 		{
 			name:    "all right case",
-			c:       *NewCacheKV[string, string](),
+			c:       *New[string, string](),
 			args:    args[string]{nil, "key1"},
 			wantErr: assert.NoError,
 		},

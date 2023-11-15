@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/chenyanchen/db"
+	"github.com/chenyanchen/db/cachekv"
 )
 
 func main() {
-	kv := db.NewCacheKV[string, string](db.WithSmoothExpires[string, string](time.Hour))
+	kv := cachekv.New[string, string](cachekv.WithSmoothExpires[string, string](time.Hour))
 	ctx := context.TODO()
 	if err := kv.Set(ctx, "foo", "bar"); err != nil {
 		panic(err)

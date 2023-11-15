@@ -1,4 +1,4 @@
-package db
+package singleflightkv
 
 import (
 	"context"
@@ -27,7 +27,7 @@ func Test_sfKV_Get(t *testing.T) {
 		{
 			name: "error case",
 			s: func() *sfKV[string, string] {
-				kv, err := NewSingleFlightKV[string, string](mocks.MockKVStore[string, string]{
+				kv, err := New[string, string](mocks.MockKVStore[string, string]{
 					GetFunc: func(ctx context.Context, k string) (string, error) { return "", errors.New("not found") },
 				})
 				assert.NoError(t, err)
@@ -38,7 +38,7 @@ func Test_sfKV_Get(t *testing.T) {
 		}, {
 			name: "right case",
 			s: func() *sfKV[string, string] {
-				kv, err := NewSingleFlightKV[string, string](mocks.MockKVStore[string, string]{
+				kv, err := New[string, string](mocks.MockKVStore[string, string]{
 					GetFunc: func(ctx context.Context, k string) (string, error) { return "val1", nil },
 				})
 				assert.NoError(t, err)
@@ -74,7 +74,7 @@ func Test_sfKV_Set(t *testing.T) {
 		{
 			name: "error case ",
 			s: func() *sfKV[string, string] {
-				kv, err := NewSingleFlightKV[string, string](mocks.MockKVStore[string, string]{
+				kv, err := New[string, string](mocks.MockKVStore[string, string]{
 					SetFunc: func(ctx context.Context, k, v string) error { return errors.New("inner error") },
 				})
 				assert.NoError(t, err)
@@ -85,7 +85,7 @@ func Test_sfKV_Set(t *testing.T) {
 		}, {
 			name: "right case",
 			s: func() *sfKV[string, string] {
-				kv, err := NewSingleFlightKV[string, string](mocks.MockKVStore[string, string]{
+				kv, err := New[string, string](mocks.MockKVStore[string, string]{
 					SetFunc: func(ctx context.Context, k, v string) error { return nil },
 				})
 				assert.NoError(t, err)
@@ -117,7 +117,7 @@ func Test_sfKV_Del(t *testing.T) {
 		{
 			name: "error case",
 			s: func() *sfKV[string, string] {
-				kv, err := NewSingleFlightKV[string, string](mocks.MockKVStore[string, string]{
+				kv, err := New[string, string](mocks.MockKVStore[string, string]{
 					DelFunc: func(ctx context.Context, k string) error { return errors.New("inner error") },
 				})
 				assert.NoError(t, err)
@@ -128,7 +128,7 @@ func Test_sfKV_Del(t *testing.T) {
 		}, {
 			name: "right case",
 			s: func() *sfKV[string, string] {
-				kv, err := NewSingleFlightKV[string, string](mocks.MockKVStore[string, string]{
+				kv, err := New[string, string](mocks.MockKVStore[string, string]{
 					DelFunc: func(ctx context.Context, k string) error { return nil },
 				})
 				assert.NoError(t, err)

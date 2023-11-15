@@ -1,10 +1,12 @@
-package db
+package singleflightkv
 
 import (
 	"context"
 	"errors"
 
 	"github.com/chenyanchen/sync/singleflight"
+
+	"github.com/chenyanchen/db"
 )
 
 // sfKV represents a single-flight KV-storage to avoid concurrent
@@ -12,31 +14,31 @@ import (
 // that only one operation is performed on the same key at the same time.
 type sfKV[K comparable, V any] struct {
 	// source KV-storage
-	src KV[K, V]
+	source db.KV[K, V]
 
 	// single-flight gourp.
 	group singleflight.Group[K, V]
 }
 
-func NewSingleFlightKV[K comparable, V any](src KV[K, V]) (*sfKV[K, V], error) {
-	if src == nil {
+func New[K comparable, V any](source db.KV[K, V]) (*sfKV[K, V], error) {
+	if source == nil {
 		return nil, errors.New("source KV-storage is required")
 	}
-	return &sfKV[K, V]{src: src}, nil
+	return &sfKV[K, V]{source: source}, nil
 }
 
 func (s *sfKV[K, V]) Get(ctx context.Context, k K) (V, error) {
-	v, err, _ := s.group.Do(k, func() (V, error) { return s.src.Get(ctx, k) })
+	v, err, _ := s.group.Do(k, func() (V, error) { return s.source.Get(ctx, k) })
 	return v, err
 }
 
 func (s *sfKV[K, V]) Set(ctx context.Context, k K, v V) error {
-	_, err, _ := s.group.Do(k, func() (V, error) { return v, s.src.Set(ctx, k, v) })
+	_, err, _ := s.group.Do(k, func() (V, error) { return v, s.source.Set(ctx, k, v) })
 	return err
 }
 
 func (s *sfKV[K, V]) Del(ctx context.Context, k K) error {
 	var v V
-	_, err, _ := s.group.Do(k, func() (V, error) { return v, s.src.Del(ctx, k) })
+	_, err, _ := s.group.Do(k, func() (V, error) { return v, s.source.Del(ctx, k) })
 	return err
 }
