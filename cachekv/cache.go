@@ -1,4 +1,4 @@
-package db
+package cachekv
 
 import (
 	"context"
@@ -11,6 +11,8 @@ import (
 	"github.com/Code-Hex/go-generics-cache/policy/lfu"
 	"github.com/Code-Hex/go-generics-cache/policy/lru"
 	"github.com/Code-Hex/go-generics-cache/policy/mru"
+
+	"github.com/chenyanchen/db"
 )
 
 type CacheOption[K comparable, V any] func(kv *cacheKV[K, V])
@@ -34,8 +36,8 @@ func WithSmoothExpires[K comparable, V any](ttl time.Duration) CacheOption[K, V]
 }
 
 // WithSource returns a CacheOption to set source KV-storage.
-func WithSource[K comparable, V any](src KV[K, V]) CacheOption[K, V] {
-	return func(kv *cacheKV[K, V]) { kv.src = src }
+func WithSource[K comparable, V any](source db.KV[K, V]) CacheOption[K, V] {
+	return func(kv *cacheKV[K, V]) { kv.source = source }
 }
 
 // WithTelemetryFunc returns a CacheOption to set telemetry prefix.
@@ -77,7 +79,7 @@ type cacheKV[K comparable, V any] struct {
 	cache *cache.Cache[K, V]
 
 	// source KV-storage
-	src KV[K, V]
+	source db.KV[K, V]
 
 	// ttl function returns ttl duration.
 	ttlFn func(K) time.Duration
@@ -86,7 +88,7 @@ type cacheKV[K comparable, V any] struct {
 	telFn func(k K, scene string)
 }
 
-func NewCacheKV[K comparable, V any](options ...CacheOption[K, V]) *cacheKV[K, V] {
+func New[K comparable, V any](options ...CacheOption[K, V]) *cacheKV[K, V] {
 	kv := &cacheKV[K, V]{cache: cache.New[K, V]()}
 	for _, opt := range options {
 		opt(kv)
@@ -100,11 +102,11 @@ func (c *cacheKV[K, V]) Get(ctx context.Context, k K) (V, error) {
 		c.telemetry(k, "hit_mem")
 		return v, nil
 	}
-	if c.src == nil {
+	if c.source == nil {
 		c.telemetry(k, "miss_mem")
 		return v, fmt.Errorf("not found: %+v", k)
 	}
-	got, err := c.src.Get(ctx, k)
+	got, err := c.source.Get(ctx, k)
 	if err != nil {
 		c.telemetry(k, "miss_src")
 		return got, fmt.Errorf("get from source: %w", err)
@@ -116,8 +118,8 @@ func (c *cacheKV[K, V]) Get(ctx context.Context, k K) (V, error) {
 
 func (c *cacheKV[K, V]) Set(ctx context.Context, k K, v V) error {
 	c.cache.Set(k, v, c.cacheOptions(k)...)
-	if c.src != nil {
-		return c.src.Set(ctx, k, v)
+	if c.source != nil {
+		return c.source.Set(ctx, k, v)
 	}
 	return nil
 }
@@ -132,8 +134,8 @@ func (c *cacheKV[K, V]) cacheOptions(k K) []cache.ItemOption {
 
 func (c *cacheKV[K, V]) Del(ctx context.Context, k K) error {
 	c.cache.Delete(k)
-	if c.src != nil {
-		return c.src.Del(ctx, k)
+	if c.source != nil {
+		return c.source.Del(ctx, k)
 	}
 	return nil
 }

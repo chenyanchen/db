@@ -8,17 +8,19 @@ import (
 )
 
 func main() {
+	ctx := context.Background()
+
 	// You can define K as all comparable types, like this:
 	// array: [3]int64
 	// string (SQL): "id in (1, 2, 3)"
 	// string (JSON): `{"ids": [1, 2, 3]}`
 	var mapKV db.KV[[3]int64, []Content] = NewMapKV()
 
-	if err := mapKV.Set(nil, [3]int64{}, []Content{{ID: 1, Title: "A"}, {ID: 2, Title: "B"}}); err != nil {
+	if err := mapKV.Set(ctx, [3]int64{}, []Content{{ID: 1, Title: "A"}, {ID: 2, Title: "B"}}); err != nil {
 		panic(err)
 	}
 
-	contents, err := mapKV.Get(nil, [3]int64{1, 3})
+	contents, err := mapKV.Get(ctx, [3]int64{1, 3})
 	if err != nil {
 		panic(err)
 	}
@@ -41,7 +43,7 @@ func NewMapKV() *mapKV {
 }
 
 func (s *mapKV) Get(ctx context.Context, ids [3]int64) ([]Content, error) {
-	var contents []Content
+	contents := make([]Content, 0, len(ids))
 	for _, id := range ids {
 		content, ok := s.m[id]
 		if !ok {
