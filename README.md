@@ -1,3 +1,3 @@
 # db
 
-Basic database abstract and implement.
+Basic database abstract and implementations.

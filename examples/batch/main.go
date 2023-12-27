@@ -3,30 +3,28 @@ package main
 import (
 	"context"
 	"fmt"
+	"strconv"
+	"time"
 
-	"github.com/chenyanchen/db"
+	"github.com/chenyanchen/db/cachebatchkv"
+	"github.com/chenyanchen/db/cachekv"
 )
 
 func main() {
 	ctx := context.Background()
 
-	// You can define K as all comparable types, like this:
-	// array: [3]int64
-	// string (SQL): "id in (1, 2, 3)"
-	// string (JSON): `{"ids": [1, 2, 3]}`
-	var mapKV db.KV[[3]int64, []Content] = NewMapKV()
+	batchKV := cachebatchkv.New[int64, Content](
+		&fakeContentKV{},
+		cachekv.WithExpires[int64, Content](time.Hour),
+	)
 
-	if err := mapKV.Set(ctx, [3]int64{}, []Content{{ID: 1, Title: "A"}, {ID: 2, Title: "B"}}); err != nil {
-		panic(err)
-	}
-
-	contents, err := mapKV.Get(ctx, [3]int64{1, 3})
+	contents, err := batchKV.Get(ctx, []int64{1, 3, 5})
 	if err != nil {
 		panic(err)
 	}
 
 	fmt.Println("contents:", contents)
-	// output: contents: [{1 A}]
+	// output: contents: map[1:{1 Title: 1} 3:{3 Title: 3} 5:{5 Title: 5}]
 }
 
 type Content struct {
@@ -34,36 +32,20 @@ type Content struct {
 	Title string
 }
 
-type mapKV struct {
-	m map[int64]Content
-}
+type fakeContentKV struct{}
 
-func NewMapKV() *mapKV {
-	return &mapKV{m: make(map[int64]Content)}
-}
-
-func (s *mapKV) Get(ctx context.Context, ids [3]int64) ([]Content, error) {
-	contents := make([]Content, 0, len(ids))
-	for _, id := range ids {
-		content, ok := s.m[id]
-		if !ok {
-			continue
-		}
-		contents = append(contents, content)
+func (s *fakeContentKV) Get(ctx context.Context, keys []int64) (map[int64]Content, error) {
+	result := make(map[int64]Content, len(keys))
+	for _, key := range keys {
+		result[key] = Content{ID: key, Title: "Title: " + strconv.FormatInt(key, 10)}
 	}
-	return contents, nil
+	return result, nil
 }
 
-func (s *mapKV) Set(ctx context.Context, ids [3]int64, contents []Content) error {
-	for _, content := range contents {
-		s.m[content.ID] = content
-	}
+func (s *fakeContentKV) Set(ctx context.Context, kvs map[int64]Content) error {
 	return nil
 }
 
-func (s *mapKV) Del(ctx context.Context, ids [3]int64) error {
-	for _, id := range ids {
-		delete(s.m, id)
-	}
+func (s *fakeContentKV) Del(ctx context.Context, keys []int64) error {
 	return nil
 }
