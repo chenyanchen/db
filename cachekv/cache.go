@@ -104,7 +104,7 @@ func (c *cacheKV[K, V]) Get(ctx context.Context, k K) (V, error) {
 	}
 	if c.source == nil {
 		c.telemetry(k, "miss_mem")
-		return v, fmt.Errorf("not found: %+v", k)
+		return v, db.ErrNotFound
 	}
 	got, err := c.source.Get(ctx, k)
 	if err != nil {
