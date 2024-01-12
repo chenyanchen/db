@@ -15,59 +15,59 @@ import (
 	"github.com/chenyanchen/db"
 )
 
-type CacheOption[K comparable, V any] func(kv *cacheKV[K, V])
+type Option[K comparable, V any] func(kv *cacheKV[K, V])
 
-// WithTTL returns a CacheOption to set ttl function.
-func WithTTL[K comparable, V any](ttlFn func(K) time.Duration) CacheOption[K, V] {
+// WithTTL returns a Option to set ttl function.
+func WithTTL[K comparable, V any](ttlFn func(K) time.Duration) Option[K, V] {
 	return func(kv *cacheKV[K, V]) { kv.ttlFn = ttlFn }
 }
 
-// WithExpires returns a CacheOption to set solid ttl duration.
-func WithExpires[K comparable, V any](ttl time.Duration) CacheOption[K, V] {
+// WithExpires returns a Option to set solid ttl duration.
+func WithExpires[K comparable, V any](ttl time.Duration) Option[K, V] {
 	return WithTTL[K, V](func(K) time.Duration { return ttl })
 }
 
-// WithSmoothExpires returns a CacheOption to set smooth ttl.
+// WithSmoothExpires returns a Option to set smooth ttl.
 // The real TTL is a random value between [0.5*ttl, 1.5*ttl).
-func WithSmoothExpires[K comparable, V any](ttl time.Duration) CacheOption[K, V] {
+func WithSmoothExpires[K comparable, V any](ttl time.Duration) Option[K, V] {
 	return WithTTL[K, V](func(k K) time.Duration {
 		return time.Duration((0.5 + rand.Float64()) * float64(ttl))
 	})
 }
 
-// WithSource returns a CacheOption to set source KV-storage.
-func WithSource[K comparable, V any](source db.KV[K, V]) CacheOption[K, V] {
+// WithSource returns a Option to set source KV-storage.
+func WithSource[K comparable, V any](source db.KV[K, V]) Option[K, V] {
 	return func(kv *cacheKV[K, V]) { kv.source = source }
 }
 
-// WithTelemetryFunc returns a CacheOption to set telemetry prefix.
-func WithTelemetryFunc[K comparable, V any](keyFn func(K, string)) CacheOption[K, V] {
+// WithTelemetryFunc returns a Option to set telemetry prefix.
+func WithTelemetryFunc[K comparable, V any](keyFn func(K, string)) Option[K, V] {
 	return func(kv *cacheKV[K, V]) { kv.telFn = keyFn }
 }
 
-// AsLRU returns a CacheOption to set LRU cache.
-func AsLRU[K comparable, V any](capacity int) CacheOption[K, V] {
+// AsLRU returns a Option to set LRU cache.
+func AsLRU[K comparable, V any](capacity int) Option[K, V] {
 	return func(kv *cacheKV[K, V]) {
 		kv.cache = cache.New[K, V](cache.AsLRU[K, V](lru.WithCapacity(capacity)))
 	}
 }
 
-// AsLFU returns a CacheOption to set LFU cache.
-func AsLFU[K comparable, V any](capacity int) CacheOption[K, V] {
+// AsLFU returns a Option to set LFU cache.
+func AsLFU[K comparable, V any](capacity int) Option[K, V] {
 	return func(kv *cacheKV[K, V]) {
 		kv.cache = cache.New[K, V](cache.AsLFU[K, V](lfu.WithCapacity(capacity)))
 	}
 }
 
-// AsFILO returns a CacheOption to set FILO cache.
-func AsFILO[K comparable, V any](capacity int) CacheOption[K, V] {
+// AsFILO returns a Option to set FILO cache.
+func AsFILO[K comparable, V any](capacity int) Option[K, V] {
 	return func(kv *cacheKV[K, V]) {
 		kv.cache = cache.New[K, V](cache.AsFIFO[K, V](fifo.WithCapacity(capacity)))
 	}
 }
 
-// AsMRU returns a CacheOption to set MRU cache.
-func AsMRU[K comparable, V any](capacity int) CacheOption[K, V] {
+// AsMRU returns a Option to set MRU cache.
+func AsMRU[K comparable, V any](capacity int) Option[K, V] {
 	return func(kv *cacheKV[K, V]) {
 		kv.cache = cache.New[K, V](cache.AsMRU[K, V](mru.WithCapacity(capacity)))
 	}
@@ -88,7 +88,7 @@ type cacheKV[K comparable, V any] struct {
 	telFn func(k K, scene string)
 }
 
-func New[K comparable, V any](options ...CacheOption[K, V]) *cacheKV[K, V] {
+func New[K comparable, V any](options ...Option[K, V]) *cacheKV[K, V] {
 	kv := &cacheKV[K, V]{cache: cache.New[K, V]()}
 	for _, opt := range options {
 		opt(kv)
