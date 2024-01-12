@@ -6,14 +6,13 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/chenyanchen/db/cachebatchkv"
 	"github.com/chenyanchen/db/cachekv"
 )
 
 func main() {
 	ctx := context.Background()
 
-	batchKV := cachebatchkv.New[int64, Content](
+	batchKV := cachekv.NewBatch[int64, Content](
 		&fakeContentKV{},
 		cachekv.WithExpires[int64, Content](time.Hour),
 	)
