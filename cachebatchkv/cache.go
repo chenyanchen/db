@@ -22,7 +22,7 @@ type cacheBatchKV[K comparable, V any] struct {
 // New creates a new cacheBatchKV instance with the given source and options.
 func New[K comparable, V any](
 	source db.BatchKV[K, V],
-	options ...cachekv.CacheOption[K, V],
+	options ...cachekv.Option[K, V],
 ) *cacheBatchKV[K, V] {
 	return &cacheBatchKV[K, V]{
 		cache:  cachekv.New(options...),

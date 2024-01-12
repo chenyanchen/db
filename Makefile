@@ -1,5 +1,7 @@
 .PHONY: release
 
+all: test lint
+
 release:
 	goreleaser release --clean --snapshot
 
