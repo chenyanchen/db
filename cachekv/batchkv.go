@@ -1,4 +1,4 @@
-package cachebatchkv
+package cachekv
 
 import (
 	"context"
@@ -6,7 +6,6 @@ import (
 	"fmt"
 
 	"github.com/chenyanchen/db"
-	"github.com/chenyanchen/db/cachekv"
 )
 
 // cacheBatchKV is a struct that contains a cache and a source BatchKV.
@@ -19,13 +18,13 @@ type cacheBatchKV[K comparable, V any] struct {
 	source db.BatchKV[K, V]
 }
 
-// New creates a new cacheBatchKV instance with the given source and options.
-func New[K comparable, V any](
+// NewBatch creates a new cacheBatchKV instance with the given source and options.
+func NewBatch[K comparable, V any](
 	source db.BatchKV[K, V],
-	options ...cachekv.Option[K, V],
+	options ...Option[K, V],
 ) *cacheBatchKV[K, V] {
 	return &cacheBatchKV[K, V]{
-		cache:  cachekv.New(options...),
+		cache:  New(options...),
 		source: source,
 	}
 }
