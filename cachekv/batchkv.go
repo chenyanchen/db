@@ -32,6 +32,11 @@ func NewBatch[K comparable, V any](
 // Get retrieves the values for the given keys from the cache.
 // If a key is not found in the cache, it is retrieved from the source BatchKV.
 func (c *cacheBatchKV[K, V]) Get(ctx context.Context, keys []K) (map[K]V, error) {
+	// If no element in keys, return immediately.
+	if len(keys) == 0 {
+		return map[K]V{}, nil
+	}
+
 	result := make(map[K]V, len(keys))
 
 	// misses is a slice that contains the keys that are not found in the cache.
@@ -50,6 +55,11 @@ func (c *cacheBatchKV[K, V]) Get(ctx context.Context, keys []K) (map[K]V, error)
 		}
 
 		return nil, err
+	}
+
+	// If no element in misses, return immediately.
+	if len(misses) == 0 {
+		return result, nil
 	}
 
 	if c.source == nil {
@@ -74,6 +84,11 @@ func (c *cacheBatchKV[K, V]) Get(ctx context.Context, keys []K) (map[K]V, error)
 // Set sets the values for the given keys in the cache.
 // It also sets the values in the source BatchKV if it exists.
 func (c *cacheBatchKV[K, V]) Set(ctx context.Context, m map[K]V) error {
+	// If no element in m, return immediately.
+	if len(m) == 0 {
+		return nil
+	}
+
 	for k, v := range m {
 		if err := c.cache.Set(ctx, k, v); err != nil {
 			return fmt.Errorf("set cache: %w", err)
@@ -90,6 +105,11 @@ func (c *cacheBatchKV[K, V]) Set(ctx context.Context, m map[K]V) error {
 // Del deletes the values for the given keys from the cache.
 // It also deletes the values from the source BatchKV if it exists.
 func (c *cacheBatchKV[K, V]) Del(ctx context.Context, keys []K) error {
+	// If no element in keys, return immediately.
+	if len(keys) == 0 {
+		return nil
+	}
+
 	for _, key := range keys {
 		if err := c.cache.Del(ctx, key); err != nil {
 			return fmt.Errorf("del cache: %w", err)
