@@ -27,11 +27,11 @@ func WithExpires[K comparable, V any](ttl time.Duration) Option[K, V] {
 	return WithTTL[K, V](func(K) time.Duration { return ttl })
 }
 
-// WithSmoothExpires returns a Option to set smooth ttl.
+// WithSmoothExpires returns an Option to set smooth ttl.
 // The real TTL is a random value between [0.5*ttl, 1.5*ttl).
 func WithSmoothExpires[K comparable, V any](ttl time.Duration) Option[K, V] {
 	return WithTTL[K, V](func(k K) time.Duration {
-		return time.Duration((0.5 + rand.Float64()) * float64(ttl))
+		return time.Duration((0.5 + rand.Float64()) * float64(ttl)) //nolint:mnd // 0.5 are base.
 	})
 }
 
@@ -40,7 +40,7 @@ func WithSource[K comparable, V any](source db.KV[K, V]) Option[K, V] {
 	return func(kv *cacheKV[K, V]) { kv.source = source }
 }
 
-// WithTelemetryFunc returns a Option to set telemetry prefix.
+// WithTelemetryFunc returns an Option to set telemetry prefix.
 func WithTelemetryFunc[K comparable, V any](keyFn func(K, string)) Option[K, V] {
 	return func(kv *cacheKV[K, V]) { kv.telFn = keyFn }
 }
