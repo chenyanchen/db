@@ -42,7 +42,11 @@ type layerKV[K comparable, V any] struct {
 	writebackTimeout time.Duration
 }
 
-func NewLayerKV[K comparable, V any](telFn telemetryFn[K, V], writebackTimeout time.Duration, layers ...db.KV[K, V]) *layerKV[K, V] {
+func NewLayerKV[K comparable, V any](
+	telFn telemetryFn[K, V],
+	writebackTimeout time.Duration,
+	layers ...db.KV[K, V],
+) *layerKV[K, V] {
 	return &layerKV[K, V]{
 		layers:           layers,
 		telFn:            telFn,
