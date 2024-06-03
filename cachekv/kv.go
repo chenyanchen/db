@@ -31,7 +31,8 @@ func WithExpires[K comparable, V any](ttl time.Duration) Option[K, V] {
 // The real TTL is a random value between [0.5*ttl, 1.5*ttl).
 func WithSmoothExpires[K comparable, V any](ttl time.Duration) Option[K, V] {
 	return WithTTL[K, V](func(k K) time.Duration {
-		return time.Duration((0.5 + rand.Float64()) * float64(ttl)) //nolint:mnd // 0.5 are base.
+		//nolint:mnd // The real TTL is a random value between [0.5*ttl, 1.5*ttl).
+		return time.Duration((0.5 + rand.Float64()) * float64(ttl))
 	})
 }
 
