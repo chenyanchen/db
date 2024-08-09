@@ -55,11 +55,12 @@ func NewLayerKV[K comparable, V any](
 }
 
 func (l *layerKV[K, V]) Get(ctx context.Context, k K) (V, error) {
-	misses := make([]db.KV[K, V], 0, len(l.layers))
+	misses := make([]db.KV[K, V], 0, len(l.layers)-1)
 	for i, layer := range l.layers {
 		got, err := layer.Get(ctx, k)
 		if err != nil {
 			if errors.Is(err, db.ErrNotFound) {
+				misses = append(misses, layer)
 				l.telemetry(k, StateMiss, i)
 				continue
 			}
