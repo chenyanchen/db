@@ -9,18 +9,18 @@ import (
 
 type rwMutexKV[K comparable, V any] struct {
 	mu sync.RWMutex
-	kv map[K]V
+	m  map[K]V
 }
 
 func NewRWMutex[K comparable, V any]() *rwMutexKV[K, V] {
-	return &rwMutexKV[K, V]{kv: make(map[K]V)}
+	return &rwMutexKV[K, V]{m: make(map[K]V)}
 }
 
 func (s *rwMutexKV[K, V]) Get(ctx context.Context, k K) (V, error) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
-	v, ok := s.kv[k]
+	v, ok := s.m[k]
 	if !ok {
 		return v, db.ErrNotFound
 	}
@@ -31,7 +31,7 @@ func (s *rwMutexKV[K, V]) Set(ctx context.Context, k K, v V) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	s.kv[k] = v
+	s.m[k] = v
 	return nil
 }
 
@@ -39,6 +39,6 @@ func (s *rwMutexKV[K, V]) Del(ctx context.Context, k K) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	delete(s.kv, k)
+	delete(s.m, k)
 	return nil
 }
