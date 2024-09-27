@@ -19,12 +19,9 @@ type cacheBatchKV[K comparable, V any] struct {
 }
 
 // NewBatch creates a new cacheBatchKV instance with the given source and options.
-func NewBatch[K comparable, V any](
-	source db.BatchKV[K, V],
-	options ...Option[K, V],
-) *cacheBatchKV[K, V] {
+func NewBatch[K comparable, V any](cache db.KV[K, V], source db.BatchKV[K, V]) *cacheBatchKV[K, V] {
 	return &cacheBatchKV[K, V]{
-		cache:  New(options...),
+		cache:  cache,
 		source: source,
 	}
 }

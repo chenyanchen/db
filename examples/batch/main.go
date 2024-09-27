@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"strconv"
-	"time"
 
 	"github.com/chenyanchen/db/cachekv"
 )
@@ -12,10 +11,12 @@ import (
 func main() {
 	ctx := context.Background()
 
-	batchKV := cachekv.NewBatch[int64, Content](
-		&fakeContentKV{},
-		cachekv.WithExpires[int64, Content](time.Hour),
-	)
+	lru, err := cachekv.NewLRU[int64, Content](10, nil, 0)
+	if err != nil {
+		panic(err)
+	}
+
+	batchKV := cachekv.NewBatch[int64, Content](lru, &fakeContentKV{})
 
 	contents, err := batchKV.Get(ctx, []int64{1, 3, 5})
 	if err != nil {
