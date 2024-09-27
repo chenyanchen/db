@@ -1,19 +1,19 @@
 # This code is licensed under the terms of the MIT license https://opensource.org/license/mit
 # Copyright (c) 2021 Marat Reymers
 
-## Golden config for golangci-lint v1.60.3
+## Golden config for golangci-lint v1.61.0
 #
 # This is the best config for golangci-lint based on my experience and opinion.
 # It is very strict, but not extremely strict.
 # Feel free to adapt and change it for your needs.
 
-output:
-  sort-results: true
-
 run:
   # Timeout for analysis, e.g. 30s, 5m.
   # Default: 1m
   timeout: 3m
+
+output:
+  sort-results: true
 
 # This file contains only configs which differ from defaults.
 # All possible options can be found here https://github.com/golangci/golangci-lint/blob/master/.golangci.reference.yml
@@ -101,10 +101,11 @@ linters-settings:
         # Default: true
         skipRecvDeref: false
 
-  gofumpt:
-    # Enable gofumpt.
-    # Default: false
-    module-path: github.com/chenyanchen/db
+  goimports:
+    # A comma-separated list of prefixes, which, if set, checks import paths
+    # with the given prefixes are grouped after 3rd-party packages.
+    # Default: ""
+    local-prefixes: github.com/chenyanchen/db
 
   gomodguard:
     blocked:
@@ -124,10 +125,6 @@ linters-settings:
               - github.com/gofrs/uuid/v5
             reason: "gofrs' package was not go module before v5"
 
-  gosec:
-    excludes:
-      - G102 # Bind to all interfaces
-
   govet:
     # Enable all analyzers.
     # Default: false
@@ -137,6 +134,12 @@ linters-settings:
     # Default: []
     disable:
       - fieldalignment # too strict
+    # Settings per analyzer.
+    settings:
+      shadow:
+        # Whether to be strict about shadowing; can be noisy.
+        # Default: false
+        strict: true
 
   inamedparam:
     # Skips check for interface methods with only a single parameter.
@@ -186,7 +189,7 @@ linters-settings:
 
   revive:
     rules:
-      - name: unexported-return
+      - name: unused-parameter
         disabled: true
 
   rowserrcheck:
@@ -203,7 +206,7 @@ linters-settings:
     # - "default": report only the default slog logger
     # https://github.com/go-simpler/sloglint?tab=readme-ov-file#no-global
     # Default: ""
-    no-global: ""
+    no-global: "all"
     # Enforce using methods that accept a context.
     # Values:
     # - "": disabled
@@ -255,7 +258,7 @@ linters:
     - gocritic # provides diagnostics that check for bugs, performance and style issues
     - gocyclo # computes and checks the cyclomatic complexity of functions
     - godot # checks if comments end in a period
-    #- goimports # in addition to fixing imports, goimports also formats your code in the same style as gofmt
+    - goimports # in addition to fixing imports, goimports also formats your code in the same style as gofmt
     - gomoddirectives # manages the use of 'replace', 'retract', and 'excludes' directives in go.mod
     - gomodguard # allow and block lists linter for direct Go module dependencies. This is different from depguard where there are different block types for example version constraints and module recommendations
     - goprintffuncname # checks that printf-like functions are named with f at the end
@@ -353,11 +356,8 @@ issues:
         - bodyclose
         - dupl
         - funlen
+        - lll
         - goconst
         - gosec
-        - lll
         - noctx
         - wrapcheck
-    - path: "cmd"
-      linters:
-        - mnd
