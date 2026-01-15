@@ -14,7 +14,7 @@ func BenchmarkRWMutexKV_Get(b *testing.B) {
 	ctx := context.Background()
 
 	// Pre-populate
-	for i := 0; i < benchKeyCount; i++ {
+	for i := range benchKeyCount {
 		_ = kv.Set(ctx, strconv.Itoa(i), "value")
 	}
 
@@ -49,7 +49,7 @@ func BenchmarkRWMutexKV_Mixed(b *testing.B) {
 	ctx := context.Background()
 
 	// Pre-populate
-	for i := 0; i < benchKeyCount; i++ {
+	for i := range benchKeyCount {
 		_ = kv.Set(ctx, strconv.Itoa(i), "value")
 	}
 
@@ -77,7 +77,7 @@ func BenchmarkLRU_Get(b *testing.B) {
 	ctx := context.Background()
 
 	// Pre-populate
-	for i := 0; i < benchKeyCount; i++ {
+	for i := range benchKeyCount {
 		_ = kv.Set(ctx, strconv.Itoa(i), "value")
 	}
 
@@ -118,7 +118,7 @@ func BenchmarkLRU_Mixed(b *testing.B) {
 	ctx := context.Background()
 
 	// Pre-populate
-	for i := 0; i < benchKeyCount; i++ {
+	for i := range benchKeyCount {
 		_ = kv.Set(ctx, strconv.Itoa(i), "value")
 	}
 

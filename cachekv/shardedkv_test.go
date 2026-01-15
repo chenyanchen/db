@@ -6,9 +6,10 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/chenyanchen/db"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/chenyanchen/db"
 )
 
 func TestShardedKV_Get(t *testing.T) {
@@ -17,7 +18,7 @@ func TestShardedKV_Get(t *testing.T) {
 
 	// Test not found
 	_, err := kv.Get(ctx, "missing")
-	assert.ErrorIs(t, err, db.ErrNotFound)
+	require.ErrorIs(t, err, db.ErrNotFound)
 
 	// Test found
 	require.NoError(t, kv.Set(ctx, "key1", "value1"))
@@ -53,7 +54,7 @@ func TestShardedKV_Del(t *testing.T) {
 
 	// Should be not found
 	_, err := kv.Get(ctx, "key1")
-	assert.ErrorIs(t, err, db.ErrNotFound)
+	require.ErrorIs(t, err, db.ErrNotFound)
 
 	// Delete non-existent is fine
 	require.NoError(t, kv.Del(ctx, "missing"))
