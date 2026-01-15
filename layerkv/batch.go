@@ -3,8 +3,6 @@ package layerkv
 import (
 	"context"
 	"errors"
-	"maps"
-	"slices"
 
 	"github.com/chenyanchen/db"
 )
@@ -61,7 +59,12 @@ func (l batch[K, V]) Set(ctx context.Context, kvs map[K]V) error {
 		return err
 	}
 
-	return l.cache.Del(ctx, slices.Collect(maps.Keys(kvs)))
+	// Direct key extraction avoids allocations from maps.Keys + slices.Collect
+	keys := make([]K, 0, len(kvs))
+	for k := range kvs {
+		keys = append(keys, k)
+	}
+	return l.cache.Del(ctx, keys)
 }
 
 func (l batch[K, V]) Del(ctx context.Context, keys []K) error {
