@@ -7,19 +7,47 @@ import (
 	"github.com/chenyanchen/db"
 )
 
-type layerKV[K comparable, V any] struct {
-	cache db.KV[K, V]
-	store db.KV[K, V]
+// Option configures layerKV behavior.
+type Option func(*options)
+
+type options struct {
+	writeThrough bool
 }
 
-func New[K comparable, V any](cache, store db.KV[K, V]) (*layerKV[K, V], error) {
+// WithWriteThrough returns an Option that enables write-through caching.
+// With this option, Set operations update the cache instead of invalidating it.
+func WithWriteThrough() Option {
+	return func(o *options) {
+		o.writeThrough = true
+	}
+}
+
+type layerKV[K comparable, V any] struct {
+	cache        db.KV[K, V]
+	store        db.KV[K, V]
+	writeThrough bool
+}
+
+// New creates a layered KV store that checks cache before store.
+// On cache miss, values are fetched from store and cached.
+func New[K comparable, V any](cache, store db.KV[K, V], opts ...Option) (*layerKV[K, V], error) {
 	if cache == nil {
 		return nil, errors.New("cache is nil")
 	}
 	if store == nil {
 		return nil, errors.New("store is nil")
 	}
-	return &layerKV[K, V]{cache: cache, store: store}, nil
+
+	o := &options{}
+	for _, opt := range opts {
+		opt(o)
+	}
+
+	return &layerKV[K, V]{
+		cache:        cache,
+		store:        store,
+		writeThrough: o.writeThrough,
+	}, nil
 }
 
 func (l *layerKV[K, V]) Get(ctx context.Context, k K) (V, error) {
@@ -45,6 +73,9 @@ func (l *layerKV[K, V]) Set(ctx context.Context, k K, v V) error {
 		return err
 	}
 
+	if l.writeThrough {
+		return l.cache.Set(ctx, k, v)
+	}
 	return l.cache.Del(ctx, k)
 }
 
