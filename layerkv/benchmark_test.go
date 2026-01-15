@@ -225,5 +225,7 @@ func (n noopBatchStore[K, V]) Get(_ context.Context, keys []K) (map[K]V, error) 
 func (n noopBatchStore[K, V]) Set(_ context.Context, _ map[K]V) error { return nil }
 func (n noopBatchStore[K, V]) Del(_ context.Context, _ []K) error     { return nil }
 
-var _ db.KV[string, string] = noopStore[string, string]{}
-var _ db.BatchKV[string, string] = noopBatchStore[string, string]{}
+var (
+	_ db.KV[string, string]      = noopStore[string, string]{}
+	_ db.BatchKV[string, string] = noopBatchStore[string, string]{}
+)
