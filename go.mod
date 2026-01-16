@@ -1,6 +1,6 @@
 module github.com/chenyanchen/db
 
-go 1.23
+go 1.24
 
 require (
 	github.com/chenyanchen/sync v0.5.1
