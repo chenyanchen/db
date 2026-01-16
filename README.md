@@ -19,11 +19,11 @@ go get github.com/chenyanchen/db
 
 ### cachekv
 
-| Implementation | Description | Use Case |
-|----------------|-------------|----------|
-| `NewRWMutex()` | Simple RWMutex-protected map | Low concurrency workloads |
-| `NewSharded(numShards)` | Sharded map with per-shard locks | High concurrency workloads |
-| `NewLRU(size, onEvict, ttl)` | LRU cache with optional TTL | Bounded cache with eviction |
+| Implementation               | Description                      | Use Case                    |
+| ---------------------------- | -------------------------------- | --------------------------- |
+| `NewRWMutex()`               | Simple RWMutex-protected map     | Low concurrency workloads   |
+| `NewSharded(numShards)`      | Sharded map with per-shard locks | High concurrency workloads  |
+| `NewLRU(size, onEvict, ttl)` | LRU cache with optional TTL      | Bounded cache with eviction |
 
 ### layerkv
 
@@ -43,20 +43,23 @@ Deduplicates concurrent requests for the same key.
 
 ## Benchmarks
 
-### Sharded vs RWMutex KV (10 CPU cores, parallel access)
+### Sharded vs RWMutex KV (10 CPU cores, parallel access, Apple M4)
 
 ```
-BenchmarkRWMutexKV_Get-10           13311891       92 ns/op
-BenchmarkShardedKV_Get/shards=32-10 60517676       19 ns/op   (4.7x faster)
-BenchmarkShardedKV_Get/shards=64-10 79021450       15 ns/op   (6x faster)
+BenchmarkRWMutexKV_Get-10              12820437    91.37 ns/op
+BenchmarkShardedKV_Get/shards=16-10    43370292    29.54 ns/op    (3.1x faster)
+BenchmarkShardedKV_Get/shards=32-10    65453353    18.97 ns/op    (4.8x faster)
+BenchmarkShardedKV_Get/shards=64-10    80310759    13.96 ns/op    (6.5x faster)
 
-BenchmarkRWMutexKV_Set-10           10492590      115 ns/op
-BenchmarkShardedKV_Set/shards=32-10 29543521       41 ns/op   (2.8x faster)
-BenchmarkShardedKV_Set/shards=64-10 32410058       36 ns/op   (3.2x faster)
+BenchmarkRWMutexKV_Set-10              9575170     115.1 ns/op
+BenchmarkShardedKV_Set/shards=16-10    25261207    44.10 ns/op    (2.6x faster)
+BenchmarkShardedKV_Set/shards=32-10    32026902    34.11 ns/op    (3.4x faster)
+BenchmarkShardedKV_Set/shards=64-10    35371189    31.12 ns/op    (3.7x faster)
 
-BenchmarkRWMutexKV_Mixed-10         21990154       55 ns/op
-BenchmarkShardedKV_Mixed/shards=32-10 38894740     30 ns/op   (1.8x faster)
-BenchmarkShardedKV_Mixed/shards=64-10 48160051     26 ns/op   (2.1x faster)
+BenchmarkRWMutexKV_Mixed-10              21981846    56.47 ns/op
+BenchmarkShardedKV_Mixed/shards=16-10    32515441    35.50 ns/op    (1.6x faster)
+BenchmarkShardedKV_Mixed/shards=32-10    41161084    26.79 ns/op    (2.1x faster)
+BenchmarkShardedKV_Mixed/shards=64-10    50309277    21.81 ns/op    (2.6x faster)
 ```
 
 ### Write Strategy Comparison

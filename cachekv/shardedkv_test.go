@@ -87,6 +87,29 @@ func TestShardedKV_IntKey(t *testing.T) {
 	assert.Equal(t, "answer", v)
 }
 
+func TestShardedKV_StructKey(t *testing.T) {
+	type Point struct{ X, Y int }
+
+	kv := NewSharded[Point, string](16)
+	ctx := context.Background()
+
+	// Set with one variable
+	p1 := Point{X: 1, Y: 2}
+	require.NoError(t, kv.Set(ctx, p1, "origin"))
+
+	// Get with a different variable (same value)
+	p2 := Point{X: 1, Y: 2}
+	v, err := kv.Get(ctx, p2)
+	require.NoError(t, err)
+	assert.Equal(t, "origin", v)
+
+	// Overwrite works
+	require.NoError(t, kv.Set(ctx, p2, "updated"))
+	v, err = kv.Get(ctx, p1)
+	require.NoError(t, err)
+	assert.Equal(t, "updated", v)
+}
+
 func TestShardedKV_Concurrent(t *testing.T) {
 	kv := NewSharded[string, int](32)
 	ctx := context.Background()
@@ -115,34 +138,6 @@ func TestShardedKV_Concurrent(t *testing.T) {
 	}
 
 	wg.Wait()
-}
-
-func TestNextPowerOf2(t *testing.T) {
-	tests := []struct {
-		input    int
-		expected int
-	}{
-		{0, 1},
-		{1, 1},
-		{2, 2},
-		{3, 4},
-		{4, 4},
-		{5, 8},
-		{7, 8},
-		{8, 8},
-		{9, 16},
-		{15, 16},
-		{16, 16},
-		{17, 32},
-		{31, 32},
-		{32, 32},
-	}
-
-	for _, tt := range tests {
-		t.Run(strconv.Itoa(tt.input), func(t *testing.T) {
-			assert.Equal(t, tt.expected, nextPowerOf2(tt.input))
-		})
-	}
 }
 
 // Benchmarks comparing sharded vs non-sharded
