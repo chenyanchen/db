@@ -1,3 +1,7 @@
+// Example: Layered cache with database backend
+//
+// This example demonstrates how to compose a cache layer with a persistent store
+// using layerkv. On cache miss, values are fetched from the store and cached.
 package main
 
 import (
@@ -5,61 +9,41 @@ import (
 	"fmt"
 
 	"github.com/chenyanchen/kv/cachekv"
+	"github.com/chenyanchen/kv/examples/internal/mock"
 	"github.com/chenyanchen/kv/layerkv"
 )
 
 func main() {
-	userDatabaseKV := &databaseKV{}
-	userLRUKV, err := cachekv.NewLRU[int, *User](1<<10, nil, 0)
-	if err != nil {
-		panic(err)
-	}
-
-	userKV, err := layerkv.New(userLRUKV, userDatabaseKV)
-	if err != nil {
-		panic(err)
-	}
-
 	ctx := context.Background()
 
-	// 1st get user from database
+	// 1. Create your database backend (implements kv.KV[int, *User])
+	store := &mock.UserKV{}
+
+	// 2. Create an LRU cache layer
+	cache, err := cachekv.NewLRU[int, *mock.User](1000, nil, 0)
+	if err != nil {
+		panic(err)
+	}
+
+	// 3. Compose cache + store with layerkv
+	//    - Cache-aside pattern: checks cache first, falls back to store
+	//    - On cache miss, fetches from store and populates cache
+	userKV, err := layerkv.New(cache, store)
+	if err != nil {
+		panic(err)
+	}
+
+	// First Get: cache miss, fetches from database
 	user, err := userKV.Get(ctx, 1)
 	if err != nil {
 		panic(err)
 	}
+	fmt.Printf("1st get (cache miss): %+v\n", user)
 
-	// 2nd get user from cache
+	// Second Get: cache hit, returns from cache
 	user, err = userKV.Get(ctx, 1)
 	if err != nil {
 		panic(err)
 	}
-
-	fmt.Printf("user: %+v\n", user)
-}
-
-type User struct {
-	ID   int
-	Name string
-}
-
-// Database implementation
-
-type databaseKV struct {
-	// uncomment the following line to use the database
-	// db *sql.DB
-}
-
-func (s *databaseKV) Get(ctx context.Context, id int) (*User, error) {
-	return &User{
-		ID:   id,
-		Name: "Mock Name",
-	}, nil
-}
-
-func (s *databaseKV) Set(ctx context.Context, id int, user *User) error {
-	return nil
-}
-
-func (s *databaseKV) Del(ctx context.Context, id int) error {
-	return nil
+	fmt.Printf("2nd get (cache hit): %+v\n", user)
 }
