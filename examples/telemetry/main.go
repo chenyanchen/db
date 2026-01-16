@@ -1,3 +1,7 @@
+// Example: Adding telemetry to KV operations
+//
+// This example demonstrates how to wrap kv.KV implementations with
+// telemetry to record operation metrics using Prometheus.
 package main
 
 import (
@@ -9,115 +13,59 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 
-	kv "github.com/chenyanchen/kv"
 	"github.com/chenyanchen/kv/cachekv"
+	"github.com/chenyanchen/kv/examples/internal/mock"
+	"github.com/chenyanchen/kv/examples/internal/telemetry"
 	"github.com/chenyanchen/kv/layerkv"
 )
 
 func main() {
-	userDatabaseKV := &databaseKV{}
-	userLRUKV, err := cachekv.NewLRU[int, *User](1<<10, nil, 0)
-	if err != nil {
-		panic(err)
-	}
-
-	// For example cache hit ratio:
-	// 	rate(example_kv_user_kv_operation_duration_seconds_count{name="user_lru_kv", operation="Get", success="true"}[$__rate_interval])) /
-	// 	(rate(example_kv_user_kv_operation_duration_seconds_count{name="user_lru_kv", operation="Get", success="true"}[$__rate_interval]) + rate(example_kv_user_kv_operation_duration_seconds_count{name="user_database_kv", operation="Get", success="true"}[$__rate_interval]))
-	userKV, err := layerkv.New(
-		NewTelemetry(userLRUKV, NewRecorder("user_lru_kv")),
-		NewTelemetry(userDatabaseKV, NewRecorder("user_database_kv")),
-	)
-	if err != nil {
-		panic(err)
-	}
-
 	ctx := context.Background()
 
-	// 1st get user from database
-	user, err := userKV.Get(ctx, 1)
+	// 1. Create database backend
+	store := &mock.UserKV{}
+
+	// 2. Create LRU cache
+	cache, err := cachekv.NewLRU[int, *mock.User](1000, nil, 0)
 	if err != nil {
 		panic(err)
 	}
 
-	// 2nd get user from cache
-	user, err = userKV.Get(ctx, 1)
+	// 3. Wrap both with telemetry to track metrics separately
+	//    This allows calculating cache hit ratio:
+	//    rate(cache_get_success) / (rate(cache_get_success) + rate(store_get_success))
+	cacheWithMetrics := telemetry.Wrap(cache, newRecorder("cache"))
+	storeWithMetrics := telemetry.Wrap(store, newRecorder("store"))
+
+	// 4. Compose with layerkv
+	userKV, err := layerkv.New(cacheWithMetrics, storeWithMetrics)
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Printf("user: %+v\n", user)
+	// Operations will now record metrics
+	user, _ := userKV.Get(ctx, 1) // cache miss, store hit
+	fmt.Printf("1st get: %+v\n", user)
+
+	user, _ = userKV.Get(ctx, 1) // cache hit
+	fmt.Printf("2nd get: %+v\n", user)
+
+	// In production, expose metrics via HTTP:
+	// http.Handle("/metrics", promhttp.Handler())
+	// http.ListenAndServe(":8080", nil)
 }
 
-type User struct {
-	ID   int
-	Name string
-}
-
-// Database implementation
-
-type databaseKV struct {
-	// uncomment the following line to use the database
-	// db *sql.DB
-}
-
-func (s *databaseKV) Get(ctx context.Context, id int) (*User, error) {
-	return &User{
-		ID:   id,
-		Name: "Mock Name",
-	}, nil
-}
-
-func (s *databaseKV) Set(ctx context.Context, id int, user *User) error {
-	return nil
-}
-
-func (s *databaseKV) Del(ctx context.Context, id int) error {
-	return nil
-}
-
-// Telemetry implementation
-
-type recordFunc func(operation string, success bool, duration time.Duration)
-
-type telemetry[K comparable, V any] struct {
-	next   kv.KV[K, V]
-	record recordFunc
-}
-
-func NewTelemetry[K comparable, V any](next kv.KV[K, V], record recordFunc) telemetry[K, V] {
-	return telemetry[K, V]{next: next, record: record}
-}
-
-func (t telemetry[K, V]) Get(ctx context.Context, k K) (V, error) {
-	now := time.Now()
-	v, err := t.next.Get(ctx, k)
-	t.record("Get", err == nil, time.Since(now))
-	return v, err
-}
-
-func (t telemetry[K, V]) Set(ctx context.Context, k K, v V) error {
-	now := time.Now()
-	err := t.next.Set(ctx, k, v)
-	t.record("Set", err == nil, time.Since(now))
-	return err
-}
-
-func (t telemetry[K, V]) Del(ctx context.Context, k K) error {
-	now := time.Now()
-	err := t.next.Del(ctx, k)
-	t.record("Del", err == nil, time.Since(now))
-	return err
-}
-
+// Prometheus metrics
 var histogram = promauto.NewHistogramVec(prometheus.HistogramOpts{
 	Namespace: "example",
 	Subsystem: "kv",
-	Name:      "user_kv_operation_duration_seconds",
-}, []string{"name", "operation", "success"})
+	Name:      "operation_duration_seconds",
+}, []string{"layer", "operation", "success"})
 
-func NewRecorder(name string) recordFunc {
+func newRecorder(layer string) telemetry.RecordFunc {
 	return func(operation string, success bool, duration time.Duration) {
-		histogram.WithLabelValues(name, operation, strconv.FormatBool(success)).Observe(duration.Seconds())
+		histogram.WithLabelValues(layer, operation, strconv.FormatBool(success)).
+			Observe(duration.Seconds())
+		fmt.Printf("[%s] %s success=%v duration=%v\n", layer, operation, success, duration)
 	}
 }

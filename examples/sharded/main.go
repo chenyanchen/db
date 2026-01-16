@@ -1,3 +1,8 @@
+// Example: Sharded cache for high concurrency
+//
+// This example demonstrates the sharded cache implementation which
+// provides better performance under high concurrent access by reducing
+// lock contention through sharding.
 package main
 
 import (
@@ -7,42 +12,31 @@ import (
 	"github.com/chenyanchen/kv/cachekv"
 )
 
-type Point struct {
-	X, Y int
-}
-
 func main() {
 	ctx := context.Background()
 
+	// Create a sharded cache with 32 shards
+	// More shards = less lock contention = better concurrent performance
 	const numShards = 32
 
-	// NewSharded internally uses maphash.Comparable(seed, key) to pick a shard.
-	// Below are equivalent "hash examples" for int/string/struct keys.
+	// Works with any comparable key type
 
-	// string
-	{
-		key := "foo"
-		kv := cachekv.NewSharded[string, string](numShards)
-		_ = kv.Set(ctx, key, "bar")
-		v, _ := kv.Get(ctx, key)
-		fmt.Println("string value:", v)
-	}
+	// Example 1: String keys
+	stringCache := cachekv.NewSharded[string, string](numShards)
+	_ = stringCache.Set(ctx, "foo", "bar")
+	v1, _ := stringCache.Get(ctx, "foo")
+	fmt.Println("string key:", v1)
 
-	// int
-	{
-		key := 42
-		kv := cachekv.NewSharded[int, string](numShards)
-		_ = kv.Set(ctx, key, "answer")
-		v, _ := kv.Get(ctx, key)
-		fmt.Println("int value:", v)
-	}
+	// Example 2: Integer keys
+	intCache := cachekv.NewSharded[int, string](numShards)
+	_ = intCache.Set(ctx, 42, "answer")
+	v2, _ := intCache.Get(ctx, 42)
+	fmt.Println("int key:", v2)
 
-	// struct (Point)
-	{
-		key := Point{X: 1, Y: 2}
-		kv := cachekv.NewSharded[Point, string](numShards)
-		_ = kv.Set(ctx, key, "pt")
-		v, _ := kv.Get(ctx, Point{X: 1, Y: 2})
-		fmt.Println("point value:", v)
-	}
+	// Example 3: Struct keys (must be comparable)
+	type Point struct{ X, Y int }
+	pointCache := cachekv.NewSharded[Point, string](numShards)
+	_ = pointCache.Set(ctx, Point{1, 2}, "origin")
+	v3, _ := pointCache.Get(ctx, Point{1, 2})
+	fmt.Println("struct key:", v3)
 }
