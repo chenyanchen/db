@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/chenyanchen/db"
+	kv "github.com/chenyanchen/kv"
 )
 
 // cacheBatchKV is a struct that contains a cache and a source BatchKV.
@@ -13,13 +13,13 @@ import (
 //
 // Important: cacheBatchKV are not guaranteed to get all the values of keys, it guarantees no error.
 type cacheBatchKV[K comparable, V any] struct {
-	cache db.KV[K, V]
+	cache kv.KV[K, V]
 
-	source db.BatchKV[K, V]
+	source kv.BatchKV[K, V]
 }
 
 // NewBatch creates a new cacheBatchKV instance with the given source and options.
-func NewBatch[K comparable, V any](cache db.KV[K, V], source db.BatchKV[K, V]) *cacheBatchKV[K, V] {
+func NewBatch[K comparable, V any](cache kv.KV[K, V], source kv.BatchKV[K, V]) *cacheBatchKV[K, V] {
 	return &cacheBatchKV[K, V]{
 		cache:  cache,
 		source: source,
@@ -46,7 +46,7 @@ func (c *cacheBatchKV[K, V]) Get(ctx context.Context, keys []K) (map[K]V, error)
 			continue
 		}
 
-		if errors.Is(err, db.ErrNotFound) {
+		if errors.Is(err, kv.ErrNotFound) {
 			misses = append(misses, key)
 			continue
 		}

@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/chenyanchen/db/cachekv"
-	"github.com/chenyanchen/db/layerkv"
+	"github.com/chenyanchen/kv/cachekv"
+	"github.com/chenyanchen/kv/layerkv"
 )
 
 func main() {

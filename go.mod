@@ -1,4 +1,4 @@
-module github.com/chenyanchen/db
+module github.com/chenyanchen/kv
 
 go 1.24
 

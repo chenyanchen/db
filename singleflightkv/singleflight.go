@@ -6,7 +6,7 @@ import (
 
 	"github.com/chenyanchen/sync/singleflight"
 
-	"github.com/chenyanchen/db"
+	kv "github.com/chenyanchen/kv"
 )
 
 // sfKV represents a single-flight KV-storage to avoid concurrent
@@ -14,13 +14,13 @@ import (
 // that only one operation is performed on the same key at the same time.
 type sfKV[K comparable, V any] struct {
 	// source KV-storage
-	source db.KV[K, V]
+	source kv.KV[K, V]
 
 	// single-flight gourp.
 	group singleflight.Group[K, V]
 }
 
-func New[K comparable, V any](source db.KV[K, V]) (*sfKV[K, V], error) {
+func New[K comparable, V any](source kv.KV[K, V]) (*sfKV[K, V], error) {
 	if source == nil {
 		return nil, errors.New("source KV-storage is required")
 	}

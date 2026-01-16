@@ -4,7 +4,7 @@ import (
 	"context"
 	"hash/maphash"
 
-	"github.com/chenyanchen/db"
+	kv "github.com/chenyanchen/kv"
 )
 
 const defaultShardCount = 32
@@ -44,7 +44,7 @@ func (s *shardedKV[K, V]) Get(ctx context.Context, k K) (V, error) {
 	shard.mu.RUnlock()
 
 	if !ok {
-		return v, db.ErrNotFound
+		return v, kv.ErrNotFound
 	}
 	return v, nil
 }

@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	"github.com/chenyanchen/db"
+	kv "github.com/chenyanchen/kv"
 )
 
 // Option configures layerKV behavior.
@@ -23,14 +23,14 @@ func WithWriteThrough() Option {
 }
 
 type layerKV[K comparable, V any] struct {
-	cache        db.KV[K, V]
-	store        db.KV[K, V]
+	cache        kv.KV[K, V]
+	store        kv.KV[K, V]
 	writeThrough bool
 }
 
 // New creates a layered KV store that checks cache before store.
 // On cache miss, values are fetched from store and cached.
-func New[K comparable, V any](cache, store db.KV[K, V], opts ...Option) (*layerKV[K, V], error) {
+func New[K comparable, V any](cache, store kv.KV[K, V], opts ...Option) (*layerKV[K, V], error) {
 	if cache == nil {
 		return nil, errors.New("cache is nil")
 	}
@@ -56,7 +56,7 @@ func (l *layerKV[K, V]) Get(ctx context.Context, k K) (V, error) {
 		return v, nil
 	}
 
-	if !errors.Is(err, db.ErrNotFound) {
+	if !errors.Is(err, kv.ErrNotFound) {
 		return v, err
 	}
 

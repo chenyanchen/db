@@ -4,7 +4,7 @@ import (
 	"context"
 	"sync"
 
-	"github.com/chenyanchen/db"
+	kv "github.com/chenyanchen/kv"
 )
 
 type rwMutexKV[K comparable, V any] struct {
@@ -22,7 +22,7 @@ func (s *rwMutexKV[K, V]) Get(ctx context.Context, k K) (V, error) {
 
 	v, ok := s.m[k]
 	if !ok {
-		return v, db.ErrNotFound
+		return v, kv.ErrNotFound
 	}
 	return v, nil
 }
