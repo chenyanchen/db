@@ -4,15 +4,15 @@ import (
 	"context"
 	"errors"
 
-	"github.com/chenyanchen/db"
+	kv "github.com/chenyanchen/kv"
 )
 
 type batch[K comparable, V any] struct {
-	cache db.BatchKV[K, V]
-	store db.BatchKV[K, V]
+	cache kv.BatchKV[K, V]
+	store kv.BatchKV[K, V]
 }
 
-func NewBatch[K comparable, V any](cache, store db.BatchKV[K, V]) (*batch[K, V], error) {
+func NewBatch[K comparable, V any](cache, store kv.BatchKV[K, V]) (*batch[K, V], error) {
 	if cache == nil {
 		return nil, errors.New("cache is nil")
 	}

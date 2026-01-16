@@ -12,7 +12,7 @@ Generic key-value storage abstraction library for Go with composable implementat
 ## Installation
 
 ```bash
-go get github.com/chenyanchen/db
+go get github.com/chenyanchen/kv
 ```
 
 ## Implementations
@@ -76,8 +76,8 @@ package main
 
 import (
     "context"
-    "github.com/chenyanchen/db/cachekv"
-    "github.com/chenyanchen/db/layerkv"
+    "github.com/chenyanchen/kv/cachekv"
+    "github.com/chenyanchen/kv/layerkv"
 )
 
 func main() {
@@ -90,7 +90,7 @@ func main() {
 
     // Layered cache with database backend
     lru, _ := cachekv.NewLRU[string, string](1000, nil, 0)
-    store := &myDatabaseKV{} // implements db.KV[string, string]
+    store := &myDatabaseKV{} // implements kv.KV[string, string]
     layered, _ := layerkv.New(lru, store, layerkv.WithWriteThrough())
     layered.Get(ctx, "key") // checks cache first, then store
 }

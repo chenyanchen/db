@@ -7,8 +7,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/chenyanchen/db"
-	"github.com/chenyanchen/db/mocks"
+	kv "github.com/chenyanchen/kv"
+	"github.com/chenyanchen/kv/mocks"
 )
 
 func Test_layerKV_Get(t *testing.T) {
@@ -53,7 +53,7 @@ func Test_layerKV_Get(t *testing.T) {
 			l: layerKV[string, string]{
 				cache: &mocks.MockKVStore[string, string]{
 					GetFunc: func(ctx context.Context, k string) (string, error) {
-						return "", db.ErrNotFound
+						return "", kv.ErrNotFound
 					},
 				},
 				store: &mocks.MockKVStore[string, string]{
@@ -70,7 +70,7 @@ func Test_layerKV_Get(t *testing.T) {
 			l: layerKV[string, string]{
 				cache: &mocks.MockKVStore[string, string]{
 					GetFunc: func(ctx context.Context, k string) (string, error) {
-						return "", db.ErrNotFound
+						return "", kv.ErrNotFound
 					},
 					SetFunc: func(ctx context.Context, k string, v string) error {
 						return assert.AnError
@@ -90,7 +90,7 @@ func Test_layerKV_Get(t *testing.T) {
 			l: layerKV[string, string]{
 				cache: &mocks.MockKVStore[string, string]{
 					GetFunc: func(ctx context.Context, k string) (string, error) {
-						return "", db.ErrNotFound
+						return "", kv.ErrNotFound
 					},
 					SetFunc: func(ctx context.Context, k string, v string) error {
 						return nil

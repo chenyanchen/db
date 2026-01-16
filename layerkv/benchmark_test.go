@@ -5,9 +5,9 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/chenyanchen/db"
-	"github.com/chenyanchen/db/cachekv"
-	"github.com/chenyanchen/db/mocks"
+	kv "github.com/chenyanchen/kv"
+	"github.com/chenyanchen/kv/cachekv"
+	"github.com/chenyanchen/kv/mocks"
 )
 
 // BenchmarkBatch_Set measures the batch Set operation including key extraction.
@@ -206,7 +206,7 @@ func BenchmarkBatch_Get(b *testing.B) {
 	}
 }
 
-// noopStore is a simple store that does nothing but satisfies db.KV interface.
+// noopStore is a simple store that does nothing but satisfies kv.KV interface.
 type noopStore[K comparable, V any] struct {
 	val V
 }
@@ -215,7 +215,7 @@ func (n noopStore[K, V]) Get(_ context.Context, _ K) (V, error) { return n.val, 
 func (n noopStore[K, V]) Set(_ context.Context, _ K, _ V) error { return nil }
 func (n noopStore[K, V]) Del(_ context.Context, _ K) error      { return nil }
 
-// noopBatchStore satisfies db.BatchKV interface.
+// noopBatchStore satisfies kv.BatchKV interface.
 type noopBatchStore[K comparable, V any] struct{}
 
 func (n noopBatchStore[K, V]) Get(_ context.Context, keys []K) (map[K]V, error) {
@@ -226,6 +226,6 @@ func (n noopBatchStore[K, V]) Set(_ context.Context, _ map[K]V) error { return n
 func (n noopBatchStore[K, V]) Del(_ context.Context, _ []K) error     { return nil }
 
 var (
-	_ db.KV[string, string]      = noopStore[string, string]{}
-	_ db.BatchKV[string, string] = noopBatchStore[string, string]{}
+	_ kv.KV[string, string]      = noopStore[string, string]{}
+	_ kv.BatchKV[string, string] = noopBatchStore[string, string]{}
 )

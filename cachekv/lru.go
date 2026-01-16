@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/golang-lru/v2/expirable"
 	"github.com/hashicorp/golang-lru/v2/simplelru"
 
-	"github.com/chenyanchen/db"
+	kv "github.com/chenyanchen/kv"
 )
 
 type lruKV[K comparable, V any] struct {
@@ -33,7 +33,7 @@ func (c *lruKV[K, V]) Get(ctx context.Context, k K) (V, error) {
 	if ok {
 		return v, nil
 	}
-	return v, db.ErrNotFound
+	return v, kv.ErrNotFound
 }
 
 func (c *lruKV[K, V]) Set(ctx context.Context, k K, v V) error {

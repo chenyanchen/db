@@ -1,13 +1,13 @@
-module github.com/chenyanchen/db/examples
+module github.com/chenyanchen/kv/examples
 
 go 1.24
 
 require (
-	github.com/chenyanchen/db v0.0.0-00010101000000-000000000000
+	github.com/chenyanchen/kv v0.0.0-00010101000000-000000000000
 	github.com/prometheus/client_golang v1.20.5
 )
 
-replace github.com/chenyanchen/db => ../
+replace github.com/chenyanchen/kv => ../
 
 require (
 	github.com/beorn7/perks v1.0.1 // indirect

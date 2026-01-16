@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/chenyanchen/db/cachekv"
+	"github.com/chenyanchen/kv/cachekv"
 )
 
 func main() {

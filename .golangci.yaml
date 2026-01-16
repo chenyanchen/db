@@ -215,7 +215,7 @@ formatters:
   settings:
     goimports:
       local-prefixes:
-        - github.com/chenyanchen/db
+        - github.com/chenyanchen/kv
   exclusions:
     generated: lax
     paths:

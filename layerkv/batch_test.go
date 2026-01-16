@@ -7,7 +7,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/chenyanchen/db/mocks"
+	"github.com/chenyanchen/kv/mocks"
 )
 
 func Test_batch_Get(t *testing.T) {

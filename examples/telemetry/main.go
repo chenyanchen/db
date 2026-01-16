@@ -9,9 +9,9 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 
-	"github.com/chenyanchen/db"
-	"github.com/chenyanchen/db/cachekv"
-	"github.com/chenyanchen/db/layerkv"
+	kv "github.com/chenyanchen/kv"
+	"github.com/chenyanchen/kv/cachekv"
+	"github.com/chenyanchen/kv/layerkv"
 )
 
 func main() {
@@ -81,11 +81,11 @@ func (s *databaseKV) Del(ctx context.Context, id int) error {
 type recordFunc func(operation string, success bool, duration time.Duration)
 
 type telemetry[K comparable, V any] struct {
-	next   db.KV[K, V]
+	next   kv.KV[K, V]
 	record recordFunc
 }
 
-func NewTelemetry[K comparable, V any](next db.KV[K, V], record recordFunc) telemetry[K, V] {
+func NewTelemetry[K comparable, V any](next kv.KV[K, V], record recordFunc) telemetry[K, V] {
 	return telemetry[K, V]{next: next, record: record}
 }
 
