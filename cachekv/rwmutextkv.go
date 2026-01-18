@@ -18,9 +18,9 @@ func NewRWMutex[K comparable, V any]() *rwMutexKV[K, V] {
 
 func (s *rwMutexKV[K, V]) Get(ctx context.Context, k K) (V, error) {
 	s.mu.RLock()
-	defer s.mu.RUnlock()
-
 	v, ok := s.m[k]
+	s.mu.RUnlock()
+
 	if !ok {
 		return v, kv.ErrNotFound
 	}
@@ -29,16 +29,14 @@ func (s *rwMutexKV[K, V]) Get(ctx context.Context, k K) (V, error) {
 
 func (s *rwMutexKV[K, V]) Set(ctx context.Context, k K, v V) error {
 	s.mu.Lock()
-	defer s.mu.Unlock()
-
 	s.m[k] = v
+	s.mu.Unlock()
 	return nil
 }
 
 func (s *rwMutexKV[K, V]) Del(ctx context.Context, k K) error {
 	s.mu.Lock()
-	defer s.mu.Unlock()
-
 	delete(s.m, k)
+	s.mu.Unlock()
 	return nil
 }
