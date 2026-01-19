@@ -60,23 +60,6 @@ func TestShardedKV_Del(t *testing.T) {
 	require.NoError(t, kv.Del(ctx, "missing"))
 }
 
-func TestShardedKV_Len(t *testing.T) {
-	kv := NewSharded[string, string](16)
-	ctx := context.Background()
-
-	assert.Equal(t, 0, kv.Len())
-
-	for i := range 100 {
-		require.NoError(t, kv.Set(ctx, strconv.Itoa(i), "value"))
-	}
-	assert.Equal(t, 100, kv.Len())
-
-	for i := range 50 {
-		require.NoError(t, kv.Del(ctx, strconv.Itoa(i)))
-	}
-	assert.Equal(t, 50, kv.Len())
-}
-
 func TestShardedKV_IntKey(t *testing.T) {
 	kv := NewSharded[int, string](16)
 	ctx := context.Background()

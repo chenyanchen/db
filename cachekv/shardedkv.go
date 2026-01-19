@@ -64,14 +64,3 @@ func (s *shardedKV[K, V]) Del(ctx context.Context, k K) error {
 	shard.mu.Unlock()
 	return nil
 }
-
-// Len returns the total number of items across all shards.
-func (s *shardedKV[K, V]) Len() int {
-	var count int
-	for _, shard := range s.shards {
-		shard.mu.RLock()
-		count += len(shard.m)
-		shard.mu.RUnlock()
-	}
-	return count
-}
