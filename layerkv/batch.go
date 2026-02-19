@@ -3,6 +3,7 @@ package layerkv
 import (
 	"context"
 	"errors"
+	"maps"
 
 	kv "github.com/chenyanchen/kv"
 )
@@ -47,9 +48,7 @@ func (l batch[K, V]) Get(ctx context.Context, keys []K) (map[K]V, error) {
 		return nil, err
 	}
 
-	for k, v := range store {
-		cache[k] = v
-	}
+	maps.Copy(cache, store)
 
 	return cache, l.cache.Set(ctx, store)
 }
